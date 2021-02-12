@@ -18,7 +18,7 @@ const router = express.Router();
 app.set('view engine', 'ejs');
 
 async function getShifts(req,res) {
-  let shifts
+  let shifts;
   try {
     shifts = await query('select * from shifts;');
   } catch (e) {
@@ -27,7 +27,7 @@ async function getShifts(req,res) {
 
   res.setHeader('Content-Type', 'application/json');
 
-  if(shifts) {
+  if (shifts) {
     res.end(JSON.stringify(shifts.rows));
   } else {
     res.end(JSON.stringify({}));
