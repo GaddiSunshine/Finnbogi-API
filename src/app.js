@@ -24,11 +24,13 @@ async function getShifts(req,res) {
   } catch (e) {
     console.error(e);
   }
+
+  res.setHeader('Content-Type', 'application/json');
+
   if(shifts) {
-    res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(shifts.rows));
   } else {
-    res.render('404', {title: "404" });
+    res.end(JSON.stringify({}));
   }
 }
 

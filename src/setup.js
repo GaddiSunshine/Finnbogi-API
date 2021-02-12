@@ -31,7 +31,7 @@ export async function query(q) {
 }
 
 async function main() {
-  await query('drop table if exists signatures');
+  await query('drop table if exists shifts');
 
   try {
     const createTable = await readFileAsync('sql/schema.sql');
