@@ -27,8 +27,8 @@ async function getShifts(req,res) {
 
   res.setHeader('Content-Type', 'application/json');
 
-  console.log(shifts);
-  
+  console.log("shifts", shifts);
+
   if (shifts) {
     res.end(JSON.stringify(shifts.rows));
   } else {
