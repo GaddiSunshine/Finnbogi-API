@@ -1,0 +1,25 @@
+{
+  "name": "Finnbogi-API",
+  "version": "1.0.0",
+  "description": "",
+  "main": ".eslintrc.js",
+  "scripts": {
+    "eslint": "eslint src/*.js",
+    "dev": "nodemon src/app.js",
+    "start": "node ./src/app.js",
+    "setup": "node ./src/setup.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "eslint": "^7.19.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.22.1",
+    "express": "^4.17.1",
+    "express-validator": "^6.9.2",
+    "nodemon": "^2.0.7",
+    "pg": "^8.5.1"
+  }
+}
