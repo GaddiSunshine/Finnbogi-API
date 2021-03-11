@@ -1,37 +1,10 @@
-import pg from 'pg';
-import dotenv from 'dotenv';
 import faker from 'faker';
 import bcrypt from 'bcrypt';
 import fs from 'fs';
 import util from 'util';
+import { query } from './db.js';
 
 const readFileAsync = util.promisify(fs.readFile);
-
-dotenv.config();
-
-const {
-  DATABASE_URL: connectionString,
-} = process.env;
-
-if (!connectionString) {
-  console.error('Vantar DATABASE_URL');
-  process.exit(1);
-}
-
-export async function query(_query, values = []) {
-  const pool = new pg.Pool({ connectionString });
-  const client = await pool.connect();
-
-  try {
-    const result = await client.query(_query, values);
-    return result;
-  } catch (e) {
-    console.error('villa!', e);
-    return null;
-  } finally {
-    client.release();
-  }
-}
 
 function getRandomRole() {
   const roles = ['chef', 'bartender', 'waiter'];
