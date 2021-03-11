@@ -1,49 +1,140 @@
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import express from 'express';
+import session from 'express-session';
 import dotenv from 'dotenv';
-import { query } from './db.js';
+
+import passport from './login.js';
+
+import { router as userRouter } from './users.js';
+import { router as shiftRouter } from './shifts.js';
 
 dotenv.config();
 
+const filename = fileURLToPath(import.meta.url);
+const theDirname = dirname(filename);
+
 const {
   PORT: port = 3000,
+  SESSION_SECRET: sessionSecret = 'leyndarmál',
 } = process.env;
 
-function catchError(f) {
-  return (req, res, next) => f(req, res, next).catch(next);
-}
-
 const app = express();
-const router = express.Router();
 
-app.set('view engine', 'ejs');
+app.use(session({
+  secret: sessionSecret,
+  resave: false,
+  saveUninitialized: false,
+  maxAge: 60 * 60 * 1000, // 1klst
+}));
 
-async function getShifts(req,res) {
-  let shifts;
-  try {
-    shifts = await query('select * from shifts;');
-  } catch (e) {
-    console.error(e);
-  }
+app.use(express.static('public'));
+app.use('', express.static(join(theDirname, 'public')));
+app.use(express.urlencoded({ extended: true }));
 
-  res.setHeader('Content-Type', 'application/json');
+app.use(passport.initialize());
+app.use(passport.session());
 
-  console.log("shifts", shifts);
+// innskráningarvirkni
+app.post(
+  '/users/login',
+  passport.authenticate('local', {
+    failureMessage: 'Notandanafn eða lykilorð rangt',
+    failureRedirect: '/users',
+  }),
 
-  if (shifts) {
-    res.end(JSON.stringify(shifts.rows));
-  } else {
-    res.end(JSON.stringify({}));
-  }
+  (req, res) => {
+    res.redirect('/users');
+  },
+);
+
+// útskráir notanda
+app.get('/users/logout', (req, res) => {
+  req.logout();
+  res.redirect('/');
+});
+
+// async function getShifts(req, res) {
+//   let shifts;
+//   try {
+//     shifts = await query('select * from shifts;');
+//   } catch (e) {
+//     console.error(e);
+//   }
+
+//   res.setHeader('Content-Type', 'application/json');
+
+//   console.log("shifts", shifts);
+
+//   if (shifts) {
+//     res.end(JSON.stringify(shifts.rows));
+//   } else {
+//     res.end(JSON.stringify({}));
+//   }
+// }
+
+// router.get('/getShifts', catchError(getShifts));
+
+app.use('/users', userRouter);
+app.use('/shifts', shiftRouter);
+
+function indexRoute(req, res) {
+  return res.json({
+    shifts: {
+      shifts: {
+        href: '/shifts',
+        methods: [
+          'GET',
+        ],
+      },
+      shift: {
+        href: '/shifts/{id}',
+        methods: [
+          'GET',
+          'PATCH',
+          'DELETE',
+        ],
+      },
+    },
+    users: {
+      users: {
+        href: '/users',
+        methods: [
+          'GET',
+        ],
+      },
+      user: {
+        href: '/users/{id}',
+        methods: [
+          'GET',
+          'PATCH',
+          'DELETE',
+        ],
+      },
+      register: {
+        href: '/users/register',
+        methods: [
+          'POST',
+        ],
+      },
+      login: {
+        href: '/users/login',
+        methods: [
+          'POST',
+        ],
+      },
+      me: {
+        href: '/users/me',
+        methods: [
+          'GET',
+          'PATCH',
+        ],
+      },
+    },
+  });
 }
 
-router.get('/shifts', catchError(getShifts));
-
-
-app.use('/', router);
-
-app.use('./', (req, res) => {
-  res.status(404).render('404', { title: "404" });
-});
+app.use('/', indexRoute);
 
 app.listen(port, () => {
   console.info(`Server running at http://localhost:${port}/`);
