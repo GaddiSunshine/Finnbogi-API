@@ -44,7 +44,7 @@ app.post(
   }),
 
   (req, res) => {
-    res.redirect('/users');
+    res.redirect(`/users/${req.session.passport.user.id}`);
   },
 );
 
@@ -53,27 +53,6 @@ app.get('/users/logout', (req, res) => {
   req.logout();
   res.redirect('/');
 });
-
-// async function getShifts(req, res) {
-//   let shifts;
-//   try {
-//     shifts = await query('select * from shifts;');
-//   } catch (e) {
-//     console.error(e);
-//   }
-
-//   res.setHeader('Content-Type', 'application/json');
-
-//   console.log("shifts", shifts);
-
-//   if (shifts) {
-//     res.end(JSON.stringify(shifts.rows));
-//   } else {
-//     res.end(JSON.stringify({}));
-//   }
-// }
-
-// router.get('/getShifts', catchError(getShifts));
 
 app.use('/users', userRouter);
 app.use('/shifts', shiftRouter);
@@ -84,7 +63,7 @@ function indexRoute(req, res) {
       shifts: {
         href: '/shifts',
         methods: [
-          'GET',
+          'GET'
         ],
       },
       shift: {

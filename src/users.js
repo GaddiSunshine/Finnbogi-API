@@ -1,6 +1,6 @@
 import express from 'express';
 import {
-  getAllUsers, getUser, makeUser, patchUser,
+  getAllUsers, getAllUsersWithInfo, getUserWithInfo, getUser, makeUser, patchUser,
 } from './db.js';
 
 export const router = express.Router();
@@ -56,6 +56,17 @@ async function showUsers(req, res) {
   return res.json(data);
 }
 
+async function showUsersWithInfo(req, res) {
+  const data = await getAllUsersWithInfo();
+  return res.json(data);
+}
+
+async function showUserWithInfo(req, res) {
+  const { id } = req.params;
+  const data = await getUserWithInfo(id);
+  return res.json(data);
+}
+
 async function userById(req, res) {
   const { id } = req.params;
   const data = await getUser(id);
@@ -85,9 +96,10 @@ async function getMe(req, res) {
   return res.json({ username, email });
 }
 
-router.patch('/me', ensureLoggedIn, catchErrors(updateUser));
-router.get('/me', ensureLoggedIn, catchErrors(getMe));
-router.post('/register', catchErrors(createUser));
-router.get('/:id', ensureLoggedIn, ensureAdmin, catchErrors(userById));
-// router.get('/', ensureLoggedIn, ensureAdmin, catchErrors(showUsers));
+router.get('/info', catchErrors(showUsersWithInfo));
+router.get('/info/:id', catchErrors(showUserWithInfo));
+// router.patch('/me', ensureLoggedIn, catchErrors(updateUser));
+// router.get('/me', ensureLoggedIn, catchErrors(getMe));
+// router.post('/register', catchErrors(createUser));
+router.get('/:id', catchErrors(userById));
 router.get('/', catchErrors(showUsers));

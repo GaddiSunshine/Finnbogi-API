@@ -34,7 +34,25 @@ export async function query(q, values = []) {
 
 export async function getAllUsers() {
   const results = await query('select * from users');
-  // console.log(results);
+  return results.rows;
+}
+
+export async function getAllUsersWithInfo() {
+  const results = await query('select * from users inner join userinfos on (users.userInfoId = userinfos.id);');
+
+  if (!results) {
+    return {};
+  }
+  return results.rows;
+}
+
+export async function getUserWithInfo(id) {
+  const results = await query('select * from users inner join userinfos on (users.userInfoId = userinfos.id) where users.id = $1', [id]);
+  console.info(results.rows);
+
+  if (!results) {
+    return {};
+  }
   return results.rows;
 }
 
@@ -44,14 +62,59 @@ export async function getAllShifts() {
   return results.rows;
 }
 
+export async function getShiftById(id) {
+  const result = await query('select * from shifts where id = $1;', [id]);
+
+  if (!result) {
+    return {};
+  }
+  return result.rows[0];
+}
+
+export async function makeShift(role, startTime, endTime) {
+  const result = await query('insert into shifts (role, startTime, endTime) values ($1, $2, $3)', [role, startTime, endTime]);
+
+  if (result) {
+    return result.rows[0];
+  }
+  return null;
+}
+
+export async function getShiftByUserId(id) {
+  const result = await query('select * from shifts where userid = $1', [id]);
+
+  if (result) {
+    return result.rows;
+  }
+  return null;
+}
+
+export async function deleteShift(id) {
+  const result = await query('delete from shifts where id = $1', [id]);
+
+  if (result) {
+    return result.rows[0];
+  }
+  return null;
+}
+
+export async function assignUserOnShift(userId, shiftId) {
+  const result = await query('update shifts set userid = $1 where id = $2', [userId, shiftId]);
+
+  if (!result) {
+    return {};
+  }
+  return result.rows[0];
+}
+
 export async function getUser(id) {
   const results = await query('select * from users where id = $1', [id]);
 
   // checking if user exists
-  if (results.rows) {
+  if (results) {
     return results.rows[0];
   }
-  return null;
+  return {};
 }
 
 export async function makeUser(username, email, password) {
@@ -61,7 +124,7 @@ export async function makeUser(username, email, password) {
   if (result) {
     return { username, email };
   }
-  return null;
+  return {};
 }
 
 export async function patchUser(id, username = '', email = '', password = '') {
