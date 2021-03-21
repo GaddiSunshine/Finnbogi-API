@@ -25,7 +25,6 @@ async function makeUsers(n) {
     }
     // eslint-disable-next-line no-await-in-loop
     const result = await query('insert into userInfos (firstName, surName, address, email, phoneNumber, startDate, ssn) values ($1, $2, $3, $4, $5, $6, $7);', [firstName, surName, address, email, phoneNumber, startDate, ssn]);
-    console.info(result);
   }
 
   for (let i = 0; i < n; i += 1) {
@@ -36,7 +35,7 @@ async function makeUsers(n) {
 
     // eslint-disable-next-line no-await-in-loop
     const result = await query('insert into users (userName, role, password, userInfoId) values ($1, $2, $3, $4);', [name, role, password, i]);
-    console.info(result);
+    // console.info(result);
   }
   const adminPass = await bcrypt.hash('123', 11);
   await query('insert into users (userName, role, password, admin, userInfoId) values ($1, $2, $3, $4, $5);', ['admin', 'admin', adminPass, true, n]);
@@ -50,8 +49,7 @@ async function makeShifts(n, u) {
     const data = await query('select role from users where id = $1', [userId]);
     let role;
     if (data) {
-      console.log(data);
-      role = data.rows[0].role;
+      role = data.rows[0]?.role || 'Waiter';
     }
     // eslint-disable-next-line no-await-in-loop
     await query('insert into shifts (role, startTime, endTime, userId) values ($1, $2, $3, $4);', [role, date, date, userId]);
