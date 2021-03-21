@@ -72,7 +72,8 @@ export async function getShiftById(id) {
 }
 
 export async function makeShift(role, startTime, endTime) {
-  const result = await query('insert into shifts (role, startTime, endTime) values ($1, $2, $3)', [role, startTime, endTime]);
+  const id = await query('insert into shifts (role, startTime, endTime) values ($1, $2, $3) RETURNING id', [role, startTime, endTime]);
+  const result = await query('select * from shifts where id = $1', [id.rows[0].id]);
 
   if (result) {
     return result.rows[0];

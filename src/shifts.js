@@ -29,6 +29,8 @@ async function getShiftsForUser(req, res) {
 async function createShift(req, res) {
   const { role, startTime, endTime } = req.body;
 
+  console.info("gonna add shift: ", role, startTime, endTime);
+
   const data = await makeShift(role, startTime, endTime);
   return res.json(data);
 }
