@@ -27,3 +27,18 @@ CREATE TABLE IF NOT EXISTS shifts (
   userId integer,
   FOREIGN KEY (userId) references users(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS notifications (
+  id serial primary key,
+  title character varying(128),
+  text character varying(512)
+);
+
+CREATE TABLE IF NOT EXISTS notificationUsers (
+  id serial primary key,
+  userId integer NOT NULL,
+  notificationId integer NOT NULL,
+  read boolean default false,
+  FOREIGN KEY (userId) references users(id) ON DELETE CASCADE,
+  FOREIGN KEY (notificationId) references notifications(id) ON DELETE CASCADE
+);

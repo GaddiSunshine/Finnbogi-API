@@ -8,6 +8,7 @@ import passport from './login.js';
 
 import { router as userRouter } from './users.js';
 import { router as shiftRouter } from './shifts.js';
+import { router as notificationRouter } from './notifications.js';
 
 dotenv.config();
 
@@ -56,6 +57,7 @@ app.get('/users/logout', (req, res) => {
 
 app.use('/users', userRouter);
 app.use('/shifts', shiftRouter);
+app.use('/notifications', notificationRouter);
 
 function indexRoute(req, res) {
   return res.json({
@@ -63,7 +65,7 @@ function indexRoute(req, res) {
       shifts: {
         href: '/shifts',
         methods: [
-          'GET'
+          'GET',
         ],
       },
       shift: {

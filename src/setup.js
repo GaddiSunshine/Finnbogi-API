@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 import faker from 'faker';
 import bcrypt from 'bcrypt';
 import fs from 'fs';
@@ -56,11 +57,27 @@ async function makeShifts(n, u) {
   }
 }
 
+async function makeNotifications(n, u) {
+  for (let i = 0; i < u + 1; i += 1) {
+    for (let j = 0; j < n; j += 1) {
+      const title = faker.lorem.sentence();
+      const text = faker.lorem.words(50);
+
+      // await query('insert into shifts (role, startTime, endTime) values ($1, $2, $3) RETURNING id', [role, startTime, endTime]);
+      const id = await query('insert into notifications (title, text) values ($1, $2) returning id;', [title, text]);
+
+      const data = await query('insert into notificationusers (userid, notificationid) values ($1, $2);', [i, id.rows[0].id]);
+    }
+  }
+}
+
 async function main() {
   console.info('dropping tables');
   await query('drop table if exists userInfos;');
   await query('drop table if exists shifts;');
   await query('drop table if exists users;');
+  await query('drop table if exists notificationusers;');
+  await query('drop table if exists notifications cascade;');
   console.info('dropped tables');
 
   try {
@@ -73,8 +90,10 @@ async function main() {
   console.info('making data');
   const users = 10;
   const shifts = 20;
+  const notifications = 20;
   await makeUsers(users);
   await makeShifts(shifts, users);
+  await makeNotifications(users, notifications);
   console.info('made data');
 }
 

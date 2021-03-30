@@ -1,3 +1,4 @@
+/* eslint-disable no-return-await */
 import pg from 'pg';
 import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
@@ -154,4 +155,47 @@ export async function patchUser(id, username = '', email = '', password = '') {
 
   const result = await query(q, [id]);
   return result;
+}
+
+export async function getAllNotifications() {
+  const results = await query('select * from notifications;');
+
+  return results.rows;
+}
+
+export async function getNotificationById(id) {
+  const results = await query('select * from notifications where id = $1;', [id]);
+
+  if (results) {
+    return results.rows[0];
+  }
+  return {};
+}
+
+export async function getAllNotificationsForUser(userId) {
+  const results = await query('select * from notifications inner join notificationusers on (notifications.id = notificationusers.notificationid) where notificationusers.userid = $1', [userId]);
+
+  if (results) {
+    return results.rows;
+  }
+  return {};
+}
+
+export async function readTheNotification(userId, notificationId) {
+  const results = await query('update notificationusers set read = true where (userId = $1 and notificationId = $2);', [userId, notificationId]);
+
+  if (results) {
+    return results.rows;
+  }
+  return {};
+}
+
+export async function postNotification(title, text, userIds) {
+  const id = await query('insert into notifications (title, text) values ($1, $2) returning id;', [title, text]);
+  userIds.forEach(async (userId) => await query('insert into notificationusers (userid, notificationid) values ($1, $2);', [userId, id.rows[0].id]));
+
+  if (id) {
+    return id.rows;
+  }
+  return {};
 }
