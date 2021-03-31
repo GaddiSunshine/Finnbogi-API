@@ -92,7 +92,7 @@ async function main() {
   const notifications = 20;
   await makeUsers(users);
   await makeShifts(shifts, users);
-  await makeNotifications(users, notifications);
+  await makeNotifications(notifications, users);
   console.info('made data');
 }
 

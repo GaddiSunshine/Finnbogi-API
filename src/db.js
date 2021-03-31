@@ -134,9 +134,7 @@ export async function removeUserById(id) {
 }
 
 export async function makeUser(username, password, role, ssn) {
-  console.info(ssn);
   const id = await query('insert into userinfos (ssn) values ($1) returning id;', [ssn]);
-  console.info('id: ', id.rows[0].id);
   let results;
   if (id) {
     const cryptedPass = await bcrypt.hash(password, 11);
