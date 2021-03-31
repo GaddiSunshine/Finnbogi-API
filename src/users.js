@@ -79,9 +79,9 @@ async function userById(req, res) {
 
 async function createUser(req, res) {
   const {
-    username, password, role, ssn,
+    username, password, role, ssn, admin,
   } = req.body;
-  const data = await makeUser(username, password, role, ssn);
+  const data = await makeUser(username, password, role, ssn, admin);
   return res.json(data);
 }
 
