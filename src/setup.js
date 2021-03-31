@@ -25,7 +25,7 @@ async function makeUsers(n) {
       ssn = Math.floor(ssn / 10);
     }
     // eslint-disable-next-line no-await-in-loop
-    const result = await query('insert into userInfos (firstName, surName, address, email, phoneNumber, startDate, ssn) values ($1, $2, $3, $4, $5, $6, $7);', [firstName, surName, address, email, phoneNumber, startDate, ssn]);
+    const result = await query('insert into userInfos (firstname, surname, address, email, phonenumber, startDate, ssn) values ($1, $2, $3, $4, $5, $6, $7);', [firstName, surName, address, email, phoneNumber, startDate, ssn]);
   }
 
   for (let i = 0; i < n; i += 1) {
@@ -63,7 +63,6 @@ async function makeNotifications(n, u) {
       const title = faker.lorem.sentence();
       const text = faker.lorem.words(50);
 
-      // await query('insert into shifts (role, startTime, endTime) values ($1, $2, $3) RETURNING id', [role, startTime, endTime]);
       const id = await query('insert into notifications (title, text) values ($1, $2) returning id;', [title, text]);
 
       const data = await query('insert into notificationusers (userid, notificationid) values ($1, $2);', [i, id.rows[0].id]);
@@ -73,10 +72,10 @@ async function makeNotifications(n, u) {
 
 async function main() {
   console.info('dropping tables');
-  await query('drop table if exists userInfos;');
-  await query('drop table if exists shifts;');
-  await query('drop table if exists users;');
-  await query('drop table if exists notificationusers;');
+  await query('drop table if exists userInfos cascade;');
+  await query('drop table if exists shifts cascade;');
+  await query('drop table if exists users cascade;');
+  await query('drop table if exists notificationusers cascade;');
   await query('drop table if exists notifications cascade;');
   console.info('dropped tables');
 

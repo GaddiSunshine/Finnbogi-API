@@ -1,18 +1,18 @@
 CREATE TABLE IF NOT EXISTS userInfos (
   id serial primary key,
-  firstName character varying(128),
-  surName character varying(128),
+  firstname character varying(128),
+  surname character varying(128),
   address character varying(128),
   email character varying(128),
-  phoneNumber character varying(128),
-  ssn character varying(128) not null unique,
+  phonenumber character varying(128),
+  ssn character varying(128) not null,
   startDate timestamp with time zone not null default current_timestamp
 );
 
 CREATE TABLE IF NOT EXISTS users (
   id serial primary key,
   userInfoId integer not null,
-  userName character varying(128) NOT NULL UNIQUE,
+  userName character varying(128) NOT NULL,
   role character varying(128) NOT NULL,
   admin boolean NOT NULL default false,
   password character varying(255) NOT NULL,

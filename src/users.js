@@ -1,6 +1,7 @@
 import express from 'express';
 import {
-  getAllUsers, getAllUsersWithInfo, getUserWithInfo, getUser, makeUser, patchUser,
+  // eslint-disable-next-line max-len
+  getAllUsers, getAllUsersWithInfo, getUserWithInfo, getUser, makeUser, patchUserInfo, removeUserById,
 } from './db.js';
 
 export const router = express.Router();
@@ -77,29 +78,32 @@ async function userById(req, res) {
 }
 
 async function createUser(req, res) {
-  const { username, password, email } = req.body;
-
-  const data = await makeUser(username, email, password);
+  const {
+    username, password, role, ssn,
+  } = req.body;
+  const data = await makeUser(username, password, role, ssn);
   return res.json(data);
 }
 
-async function updateUser(req, res) {
+async function updateUserInfo(req, res) {
   const { id } = req.params;
-  const { username, password, email } = req.body;
+  const { firstname, surname, address, email, phonenumber } = req.body;
 
-  const data = await patchUser(id, username, email, password);
+  const data = await patchUserInfo(id, firstname, surname, address, email, phonenumber);
   return res.json(data);
 }
 
-async function getMe(req, res) {
-  const { username, email } = req.session.passport.user;
-  return res.json({ username, email });
+async function removeUser(req, res) {
+  const { id } = req.params;
+
+  const data = await removeUserById(id);
+  return res.json(data);
 }
 
+router.post('/register', catchErrors(createUser));
 router.get('/info', catchErrors(showUsersWithInfo));
+router.patch('/info/:id', catchErrors(updateUserInfo));
 router.get('/info/:id', catchErrors(showUserWithInfo));
-// router.patch('/me', ensureLoggedIn, catchErrors(updateUser));
-// router.get('/me', ensureLoggedIn, catchErrors(getMe));
-// router.post('/register', catchErrors(createUser));
+router.delete('/:id', catchErrors(removeUser));
 router.get('/:id', catchErrors(userById));
 router.get('/', catchErrors(showUsers));

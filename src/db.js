@@ -27,6 +27,7 @@ export async function query(q, values = []) {
     const result = await client.query(q, values);
     return result;
   } catch (e) {
+    console.info(e);
     return null;
   } finally {
     client.release();
@@ -48,7 +49,7 @@ export async function getAllUsersWithInfo() {
 }
 
 export async function getUserWithInfo(id) {
-  const results = await query('select * from users inner join userinfos on (users.userInfoId = userinfos.id) where users.id = $1', [id]);
+  const results = await query('select * from users inner join userinfos on (users.userInfoId = userinfos.id) where userinfos.id = $1', [id]);
   console.info(results.rows);
 
   if (!results) {
@@ -119,39 +120,65 @@ export async function getUser(id) {
   return {};
 }
 
-export async function makeUser(username, email, password) {
-  const cryptedPass = await bcrypt.hash(password, 11);
+export async function removeUserById(id) {
+  const userinfoid = await query('select userinfoid from users where id = $1', [id]);
+  await query('delete from userinfos where id = $1', [userinfoid.rows[0].userinfoid]);
+  const results = await query('delete from users where id = $1', [id]);
+  // const result = await query('delete from shifts where id = $1', [id]);
+  console.info(results);
 
-  const result = await query('insert into users (username, email, password) values ($1, $2, $3)', [xss(username), xss(email), cryptedPass]);
-  if (result) {
-    return { username, email };
+  if (results) {
+    return results.rows[0];
+  }
+  return null;
+}
+
+export async function makeUser(username, password, role, ssn) {
+  console.info(ssn);
+  const id = await query('insert into userinfos (ssn) values ($1) returning id;', [ssn]);
+  console.info('id: ', id.rows[0].id);
+  let results;
+  if (id) {
+    const cryptedPass = await bcrypt.hash(password, 11);
+    const newId = await query('insert into users (username, password, role, userInfoId) values ($1, $2, $3, $4) returning id;', [username, cryptedPass, role, id.rows[0].id]);
+    results = await query('select * from users where id = $1', [newId.rows[0].id]);
+  }
+  if (results) {
+    return results.rows[0];
   }
   return {};
 }
 
-export async function patchUser(id, username = '', email = '', password = '') {
+export async function patchUserInfo(id, firstname = '', surname = '', address = '', email = '', phonenumber = '') {
   const fields = [];
   const values = [];
 
-  if (username) {
-    fields.push('username');
-    values.push(xss(username));
+  if (firstname) {
+    fields.push('firstname');
+    values.push(xss(firstname));
   }
-  if (password) {
-    fields.push('password');
-    const cryptedPass = await bcrypt.hash(password, 11);
-    values.push(cryptedPass);
+  if (surname) {
+    fields.push('surname');
+    values.push(surname);
+  }
+  if (address) {
+    fields.push('address');
+    values.push(xss(address));
   }
   if (email) {
     fields.push('email');
     values.push(xss(email));
+  }
+  if (phonenumber) {
+    fields.push('phonenumber');
+    values.push(xss(phonenumber));
   }
 
   const queries = fields.map((f, i) => (
     `${f} = '${values[i]}'`
   ));
 
-  const q = `update users set ${queries.join(', ')} where id = $1`;
+  const q = `update userinfos set ${queries.join(', ')} where id = $1`;
 
   const result = await query(q, [id]);
   return result;
