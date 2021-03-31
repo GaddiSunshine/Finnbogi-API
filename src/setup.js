@@ -28,7 +28,7 @@ async function makeUsers(n) {
     const result = await query('insert into userInfos (firstname, surname, address, email, phonenumber, startDate, ssn) values ($1, $2, $3, $4, $5, $6, $7);', [firstName, surName, address, email, phoneNumber, startDate, ssn]);
   }
 
-  for (let i = 0; i < n; i += 1) {
+  for (let i = 1; i < n; i += 1) {
     const name = faker.name.findName();
     // eslint-disable-next-line no-await-in-loop
     const password = await bcrypt.hash('123', 11);
