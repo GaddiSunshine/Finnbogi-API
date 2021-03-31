@@ -124,8 +124,6 @@ export async function removeUserById(id) {
   const userinfoid = await query('select userinfoid from users where id = $1', [id]);
   await query('delete from userinfos where id = $1', [userinfoid.rows[0].userinfoid]);
   const results = await query('delete from users where id = $1', [id]);
-  // const result = await query('delete from shifts where id = $1', [id]);
-  console.info(results);
 
   if (results) {
     return results.rows[0];
@@ -221,6 +219,90 @@ export async function postNotification(title, text, userIds) {
 
   if (id) {
     return id.rows;
+  }
+  return {};
+}
+
+export async function getAllShiftExchanges() {
+  const results = await query('select * from shiftexchanges;');
+
+  return results.rows;
+}
+
+export async function getShiftExchangeById(id) {
+  const results = await query('select * from shiftexchanges where id = $1;', [id]);
+
+  if (results) {
+    return results.rows[0];
+  }
+  return {};
+}
+
+export async function getShiftExchangeByStatus(status) {
+  const results = await query('select * from shiftexchanges where status = $1;', [status]);
+
+  if (results) {
+    return results.rows;
+  }
+  return {};
+}
+
+export async function postShiftExchange(employeeid, shiftid) {
+  const id = await query('insert into shiftexchanges (employeeid, shiftforexchangeid, status) values ($1, $2, $3) returning id;', [employeeid, shiftid, 'upforgrabs']);
+
+  if (id) {
+    return id.rows;
+  }
+  return {};
+}
+
+export async function pendingShiftExchange(shiftexchangeid, coworkershiftid) {
+  const results = await query('update shiftexchanges set coworkershiftid = $1, status = $2 where id = $3;', [coworkershiftid, 'pending', shiftexchangeid]);
+
+  if (results) {
+    return results.rows;
+  }
+  return {};
+}
+
+export async function declineShiftExchange(shiftexchangeid) {
+  const results = await query('update shiftexchanges set coworkershiftid = $1, status = $2 where id = $3;', [null, 'upforgrabs', shiftexchangeid]);
+
+  if (results) {
+    return results.rows;
+  }
+  return {};
+}
+
+export async function approvePendingShiftExchange(shiftexchangeid) {
+  const results = await query('update shiftexchanges set status = $1 where id = $2;', ['confirmable', shiftexchangeid]);
+
+  if (results) {
+    return results.rows;
+  }
+  return {};
+}
+
+export async function removeShiftExchange(id) {
+  const results = await query('delete from shiftexchanges where id = $1', [id]);
+
+  if (results) {
+    return results.rows[0];
+  }
+  return null;
+}
+
+export async function approveShiftExchange(id) {
+  const shiftexchange = await query('select * from shiftexchanges where id = $1', [id]);
+  const { employeeid, shiftforexchangeid, coworkershiftid } = shiftexchange.rows[0];
+  const coworkershift = await query('select * from shifts where id = $1', [coworkershiftid]);
+
+  await query('update shifts set userid = $1 where id = $2;', [coworkershift.rows[0].userid, shiftforexchangeid]);
+  await query('update shifts set userid = $1 where id = $2;', [employeeid, coworkershiftid]);
+  const results = await query('delete from shiftexchanges where id = $1', [id]);
+
+  if (results) {
+    return results.rows[0];
   }
   return {};
 }

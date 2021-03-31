@@ -43,13 +43,13 @@ CREATE TABLE IF NOT EXISTS notificationUsers (
   FOREIGN KEY (notificationId) references notifications(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS shiftexchange (
+CREATE TABLE IF NOT EXISTS shiftexchanges (
   id serial primary key,
   employeeid integer not null,
   shiftforexchangeid integer not null,
   coworkershiftid integer,
   status character varying(128),
   FOREIGN KEY (employeeid) references users(id) ON DELETE CASCADE,
-  FOREIGN KEY (shiftforexchangeid) references shift(id) ON DELETE CASCADE,
-  FOREIGN KEY (coworkershiftid) references shift(id) ON DELETE CASCADE
-)
+  FOREIGN KEY (shiftforexchangeid) references shifts(id) ON DELETE CASCADE,
+  FOREIGN KEY (coworkershiftid) references shifts(id) ON DELETE CASCADE
+);

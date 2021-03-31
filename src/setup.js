@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable no-await-in-loop */
 import faker from 'faker';
 import bcrypt from 'bcrypt';
@@ -44,7 +45,7 @@ async function makeUsers(n) {
 
 async function makeShifts(n, u) {
   for (let i = 0; i < n; i += 1) {
-    const date = faker.date.soon();
+    const date = faker.date.between('2021-03-31', '2021-05-10');
     const userId = Math.floor(Math.random() * u) + 1;
     // eslint-disable-next-line no-await-in-loop
     const data = await query('select role from users where id = $1', [userId]);
@@ -70,11 +71,46 @@ async function makeNotifications(n, u) {
   }
 }
 
-// async function makeShiftExchanges(users, shifts, upforgrabs, pending, confirmable) {
-//   for (let i = 0; i < upforgrabs; i += 1) {
-//     const user = 
-//   }
-// }
+async function makeShiftExchanges(users, shifts, upforgrabs, pending, confirmable) {
+  const upforgrabshifts = [];
+  for (let i = 0; i < upforgrabs; i += 1) {
+    let shift;
+    let employee;
+    while (!shift || upforgrabshifts.includes(shift)) {
+      const user = Math.floor(Math.random() * users) + 1;
+      const results = await query('select * from shifts where userid = $1', [user]);
+      shift = results.rows[Math.floor(Math.random() * results.rows.length)]?.id;
+      if (shift) {
+        employee = user;
+      }
+    }
+    upforgrabshifts.push(shift);
+    await query('insert into shiftexchanges (employeeid, shiftforexchangeid, status) values ($1, $2, $3)', [employee, shift, 'upforgrabs']);
+  }
+
+  const pendingshifts = [];
+  const pendingcoworkershifts = [];
+  for (let i = 0; i < pending + confirmable; i += 1) {
+    let shift;
+    let coworkershift;
+    let employee;
+    const status = (i >= pending ? 'confirmable' : 'pending');
+    while (!shift || upforgrabshifts.includes(shift) || pendingshifts.includes(shift)
+    || pendingcoworkershifts.includes(coworkershift)) {
+      const user = Math.floor(Math.random() * users) + 1;
+      const results = await query('select * from shifts where userid = $1', [user]);
+      const coworkershifts = await query('select * from shifts where userid != $1;', [user]);
+      shift = results.rows[Math.floor(Math.random() * results.rows.length)]?.id;
+      coworkershift = coworkershifts.rows[Math.floor(Math.random() * coworkershifts.rows.length)]?.id;
+      if (shift && coworkershift) {
+        employee = user;
+      }
+    }
+    pendingshifts.push(shift);
+    pendingcoworkershifts.push(coworkershift);
+    await query('insert into shiftexchanges (employeeid, shiftforexchangeid, coworkershiftid, status) values ($1, $2, $3, $4)', [employee, shift, coworkershift, status]);
+  }
+}
 
 async function main() {
   console.info('dropping tables');
@@ -95,7 +131,7 @@ async function main() {
 
   console.info('making data');
   const users = 10;
-  const shifts = 20;
+  const shifts = 50;
   const notifications = 20;
   await makeUsers(users);
   await makeShifts(shifts, users);
