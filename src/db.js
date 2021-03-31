@@ -133,12 +133,12 @@ export async function removeUserById(id) {
   return null;
 }
 
-export async function makeUser(username, password, role, ssn) {
+export async function makeUser(username, password, role, ssn, admin = false) {
   const id = await query('insert into userinfos (ssn) values ($1) returning id;', [ssn]);
   let results;
   if (id) {
     const cryptedPass = await bcrypt.hash(password, 11);
-    const newId = await query('insert into users (username, password, role, userInfoId) values ($1, $2, $3, $4) returning id;', [username, cryptedPass, role, id.rows[0].id]);
+    const newId = await query('insert into users (username, password, role, userInfoId, admin) values ($1, $2, $3, $4, $5) returning id;', [username, cryptedPass, role, id.rows[0].id, admin]);
     results = await query('select * from users where id = $1', [newId.rows[0].id]);
   }
   if (results) {

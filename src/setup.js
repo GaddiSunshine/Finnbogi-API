@@ -70,6 +70,12 @@ async function makeNotifications(n, u) {
   }
 }
 
+// async function makeShiftExchanges(users, shifts, upforgrabs, pending, confirmable) {
+//   for (let i = 0; i < upforgrabs; i += 1) {
+//     const user = 
+//   }
+// }
+
 async function main() {
   console.info('dropping tables');
   await query('drop table if exists userInfos cascade;');
@@ -77,6 +83,7 @@ async function main() {
   await query('drop table if exists users cascade;');
   await query('drop table if exists notificationusers cascade;');
   await query('drop table if exists notifications cascade;');
+  await query('drop table if exists shiftexchanges cascade;');
   console.info('dropped tables');
 
   try {
@@ -93,6 +100,10 @@ async function main() {
   await makeUsers(users);
   await makeShifts(shifts, users);
   await makeNotifications(notifications, users);
+  const upforgrabs = 5;
+  const pending = 5;
+  const confirmable = 10;
+  await makeShiftExchanges(users, shifts, upforgrabs, pending, confirmable);
   console.info('made data');
 }
 
