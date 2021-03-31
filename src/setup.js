@@ -58,7 +58,7 @@ async function makeShifts(n, u) {
 }
 
 async function makeNotifications(n, u) {
-  for (let i = 0; i < u + 1; i += 1) {
+  for (let i = 1; i < u; i += 1) {
     for (let j = 0; j < n; j += 1) {
       const title = faker.lorem.sentence();
       const text = faker.lorem.words(50);
