@@ -223,16 +223,50 @@ export async function postNotification(title, text, userIds) {
   return {};
 }
 
+export async function getAllShiftsForExchange() {
+  const results = await query('select * from shiftexchanges;');
+
+  let arr;
+
+  if (results) {
+    arr = await Promise.all(results.rows.map(async (r) => {
+      const shift = await query('select * from shifts where id = $1;', [r.shiftforexchangeid]);
+      return shift.rows[0];
+    }));
+  }
+
+  return arr;
+}
+
+export async function getAllCoworkerShifts() {
+  const results = await query('select * from shiftexchanges;');
+
+  let arr;
+
+  if (results) {
+    arr = await Promise.all(results.rows.map(async (r) => {
+      const shift = await query('select * from shifts where id = $1;', [r.coworkershiftid]);
+      if (shift.rows) {
+        return shift.rows[0];
+      }
+      return null;
+    }));
+  }
+
+  return arr;
+}
+
 export async function getAllShiftExchanges() {
   const results = await query('select * from shiftexchanges;');
 
   if (results) {
-    const arr = await Promise.all(results.rows.map(async (r) => {
-      const shiftone = await query('select * from shifts where id = $1;', [r.shiftforexchangeid]);
-      const shifttwo = await query('select * from shifts where id = $1;', [r.coworkershiftid]);
-      return [r, shiftone.rows[0], shifttwo.rows[0]];
-    }));
-    return arr;
+    // const arr = await Promise.all(results.rows.map(async (r) => {
+    //   const shiftone = await query('select * from shifts where id = $1;', [r.shiftforexchangeid]);
+    //   const shifttwo = await query('select * from shifts where id = $1;', [r.coworkershiftid]);
+    //   return [r, shiftone.rows[0], shifttwo.rows[0]];
+    // }));
+    // return arr;
+    return results.rows;
   }
   return {};
 }
