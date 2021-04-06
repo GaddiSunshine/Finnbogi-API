@@ -2,7 +2,7 @@
 import express from 'express';
 import {
   getAllShiftExchanges, getShiftExchangeById, postShiftExchange, getShiftExchangeByStatus, pendingShiftExchange, declineShiftExchange,
-  approvePendingShiftExchange, removeShiftExchange, approveShiftExchange,
+  approvePendingShiftExchange, removeShiftExchange, approveShiftExchange, getShiftExchangeWithInfo, getShiftExchangeWithInfoByStatus,
 } from './db.js';
 
 export const router = express.Router();
@@ -28,12 +28,10 @@ async function showShiftExchangeByStatus(req, res) {
   return res.json(data);
 }
 
-// async function getNotificationsForUser(req, res) {
-//   const { userId } = req.params;
-
-//   const data = await getAllNotificationsForUser(userId);
-//   return res.json(data);
-// }
+async function showShiftExchangeWithInfoByStatus(req, res) {
+  const data = await getShiftExchangeWithInfoByStatus('confirmable');
+  return res.json(data);
+}
 
 async function setPending(req, res) {
   const { shiftExchangeid } = req.params;
@@ -78,12 +76,19 @@ async function confirmShiftExchange(req, res) {
   return res.json(data);
 }
 
+async function showShiftExchangesWithInfo(req, res) {
+  const { shiftExchangeid } = req.params;
+
+  const data = await getShiftExchangeWithInfo(shiftExchangeid);
+  return res.json(data);
+}
+
 router.patch('/confirm/:shiftExchangeid', catchErrors(confirmShiftExchange));
 router.patch('/approvepending/:shiftExchangeid', catchErrors(approvePending));
 router.patch('/declinepending/:shiftExchangeid', catchErrors(declinePending));
 router.patch('/setpending/:shiftExchangeid', catchErrors(setPending));
-router.get('/confirmable', catchErrors(showShiftExchangeByStatus));
+router.get('/confirmable', catchErrors(showShiftExchangeWithInfoByStatus));
 router.delete('/:shiftExchangeid', catchErrors(deleteShiftExchange));
-router.get('/:shiftExchangeid', catchErrors(showShiftExchangeById));
+router.get('/:shiftExchangeid', catchErrors(showShiftExchangesWithInfo));
 router.post('/', catchErrors(createShiftExchange));
 router.get('/', catchErrors(showShiftExchanges));

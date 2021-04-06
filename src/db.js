@@ -226,7 +226,15 @@ export async function postNotification(title, text, userIds) {
 export async function getAllShiftExchanges() {
   const results = await query('select * from shiftexchanges;');
 
-  return results.rows;
+  if (results) {
+    const arr = await Promise.all(results.rows.map(async (r) => {
+      const shiftone = await query('select * from shifts where id = $1;', [r.shiftforexchangeid]);
+      const shifttwo = await query('select * from shifts where id = $1;', [r.coworkershiftid]);
+      return [r, shiftone.rows[0], shifttwo.rows[0]];
+    }));
+    return arr;
+  }
+  return {};
 }
 
 export async function getShiftExchangeById(id) {
@@ -238,11 +246,38 @@ export async function getShiftExchangeById(id) {
   return {};
 }
 
+export async function getShiftExchangeWithInfo(id) {
+  const results = await query('select * from shiftexchanges where id = $1;', [id]);
+  if (results) {
+    const arr = results.rows;
+    const shiftone = await query('select * from shifts where id = $1;', [results.rows[0].shiftforexchangeid]);
+    arr.push(shiftone.rows[0]);
+    const shifttwo = await query('select * from shifts where id = $1;', [results.rows[0].coworkershiftid]);
+    arr.push(shifttwo.rows[0]);
+    return arr;
+  }
+  return {};
+}
+
 export async function getShiftExchangeByStatus(status) {
   const results = await query('select * from shiftexchanges where status = $1;', [status]);
 
   if (results) {
     return results.rows;
+  }
+  return {};
+}
+
+export async function getShiftExchangeWithInfoByStatus(status) {
+  const results = await query('select * from shiftexchanges where status = $1;', [status]);
+
+  if (results) {
+    const arr = await Promise.all(results.rows.map(async (r) => {
+      const shiftone = await query('select * from shifts where id = $1;', [r.shiftforexchangeid]);
+      const shifttwo = await query('select * from shifts where id = $1;', [r.coworkershiftid]);
+      return [r, shiftone.rows[0], shifttwo.rows[0]];
+    }));
+    return arr;
   }
   return {};
 }
@@ -260,7 +295,7 @@ export async function pendingShiftExchange(shiftexchangeid, coworkershiftid) {
   const results = await query('update shiftexchanges set coworkershiftid = $1, status = $2 where id = $3;', [coworkershiftid, 'pending', shiftexchangeid]);
 
   if (results) {
-    return results.rows;
+    return results.rows[0];
   }
   return {};
 }
