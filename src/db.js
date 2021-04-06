@@ -298,8 +298,9 @@ export async function getShiftExchangeByStatus(status) {
 
   if (results) {
     return results.rows;
+  } else {
+    return {};
   }
-  return {};
 }
 
 export async function getShiftExchangeWithInfoByStatus(status) {
