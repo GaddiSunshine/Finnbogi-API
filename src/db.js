@@ -256,6 +256,39 @@ export async function getAllCoworkerShifts() {
   return arr;
 }
 
+export async function getAllShiftsForExchangeConfirmable() {
+  const results = await query('select * from shiftexchanges where status = $1;', ['confirmable']);
+
+  let arr;
+
+  if (results) {
+    arr = await Promise.all(results.rows.map(async (r) => {
+      const shift = await query('select * from shifts where id = $1;', [r.shiftforexchangeid]);
+      return shift.rows[0];
+    }));
+  }
+
+  return arr;
+}
+
+export async function getAllCoworkerShiftsConfirmable() {
+  const results = await query('select * from shiftexchanges where status = $1;', ['confirmable']);
+
+  let arr;
+
+  if (results) {
+    arr = await Promise.all(results.rows.map(async (r) => {
+      const shift = await query('select * from shifts where id = $1;', [r.coworkershiftid]);
+      if (shift.rows) {
+        return shift.rows[0];
+      }
+      return null;
+    }));
+  }
+
+  return arr;
+}
+
 export async function getAllShiftExchanges() {
   const results = await query('select * from shiftexchanges;');
 

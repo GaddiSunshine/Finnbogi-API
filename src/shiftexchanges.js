@@ -2,8 +2,8 @@
 import express from 'express';
 import {
   getAllShiftExchanges, getShiftExchangeById, postShiftExchange, getShiftExchangeByStatus, pendingShiftExchange, declineShiftExchange,
-  approvePendingShiftExchange, removeShiftExchange, approveShiftExchange, getShiftExchangeWithInfo, getShiftExchangeWithInfoByStatus,
-  getAllShiftsForExchange, getAllCoworkerShifts,
+  approvePendingShiftExchange, removeShiftExchange, approveShiftExchange,
+  getAllShiftsForExchange, getAllCoworkerShifts, getAllShiftsForExchangeConfirmable, getAllCoworkerShiftsConfirmable
 } from './db.js';
 
 export const router = express.Router();
@@ -77,13 +77,6 @@ async function confirmShiftExchange(req, res) {
   return res.json(data);
 }
 
-// async function showShiftExchangesWithInfo(req, res) {
-//   const { shiftExchangeid } = req.params;
-
-//   const data = await getShiftExchangeWithInfo(shiftExchangeid);
-//   return res.json(data);
-// }
-
 async function showShiftsForExchange(req, res) {
   const data = await getAllShiftsForExchange();
   return res.json(data);
@@ -94,11 +87,23 @@ async function showCoworkerShifts(req, res) {
   return res.json(data);
 }
 
+async function showConfirmableShiftByStatus(req, res) {
+  const data = await getAllShiftsForExchangeConfirmable();
+  return res.json(data);
+}
+
+async function showCoworkerShiftByStatus(req, res) {
+  const data = await getAllCoworkerShiftsConfirmable();
+  return res.json(data);
+}
+
 router.patch('/confirm/:shiftExchangeid', catchErrors(confirmShiftExchange));
 router.patch('/approvepending/:shiftExchangeid', catchErrors(approvePending));
 router.patch('/declinepending/:shiftExchangeid', catchErrors(declinePending));
 router.patch('/setpending/:shiftExchangeid', catchErrors(setPending));
 router.get('/confirmable', catchErrors(showShiftExchangeByStatus));
+router.get('/confirmable/shiftsforexchange', catchErrors(showConfirmableShiftByStatus));
+router.get('/confirmable/coworkershifts', catchErrors(showCoworkerShiftByStatus));
 router.get('/shiftsforexchange', catchErrors(showShiftsForExchange));
 router.get('/coworkershifts', catchErrors(showCoworkerShifts));
 router.delete('/:shiftExchangeid', catchErrors(deleteShiftExchange));
